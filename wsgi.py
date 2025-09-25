@@ -66,3 +66,57 @@ def user_tests_command(type):
     
 
 app.cli.add_command(test)
+
+
+import click
+from App import create_app
+from App.controllers import student_controller, staff_controller
+
+from App.controllers.student_controller import request_hours
+from App.controllers.staff_controller import approve_hours, log_hours
+app.cli.add_command(request_hours)
+app.cli.add_command(approve_hours)
+app.cli.add_command(log_hours)
+app = create_app()
+
+# STUDENT COMMANDS
+@app.cli.command("request-hours")
+@click.argument("student_id", type=int)
+@click.argument("activity")
+@click.argument("hours", type=float)
+def request_hours(student_id, activity, hours):
+    entry = student_controller.request_hours(student_id, activity, hours)
+    click.echo(f"Requested {hours}h for {activity} (id={entry.id})")
+
+@app.cli.command("leaderboard")
+def leaderboard():
+    board = student_controller.view_leaderboard()
+    for name, total in board:
+        click.echo(f"{name}: {total}h")
+
+@app.cli.command("accolades")
+@click.argument("student_id", type=int)
+def accolades(student_id):
+    accs = student_controller.view_accolades(student_id)
+    for a in accs:
+        click.echo(a)
+
+# STAFF COMMANDS
+@app.cli.command("log-hours")
+@click.argument("student_id", type=int)
+@click.argument("activity")
+@click.argument("hours", type=float)
+@click.argument("staff_name")
+def log_hours(student_id, activity, hours, staff_name):
+    entry = staff_controller.log_hours(student_id, activity, hours, staff_name)
+    click.echo(f"Staff {staff_name} logged {hours}h for {activity}")
+
+@app.cli.command("approve-hours")
+@click.argument("entry_id", type=int)
+@click.option("--status", default="approved")
+def approve_hours(entry_id, status):
+    entry = staff_controller.approve_hours(entry_id, status)
+    if entry:
+        click.echo(f"Updated entry {entry.id} → {status}")
+    else:
+        click.echo("Entry not found")
