@@ -1,12 +1,14 @@
-from App.database import db
-import datetime
+class HourEntry:
+    def __init__(self, activity, hours, date, student):
+        self.activity = activity
+        self.hours = hours
+        self.date = date
+        self.student = student
+        self.status = "pending"
 
-class HourEntry(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    activity = db.Column(db.String, nullable=False)
-    hours = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String, default="pending")  # pending, approved, rejected
-    date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    def approve(self):
+        self.status = "approved"
+        self.student.addHours(self.hours)
 
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
-    staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'))
+    def reject(self):
+        self.status = "rejected"

@@ -1,17 +1,20 @@
-import click
-from App.database import db
-from App.models import Student, HourEntry
+from App.models.student import Student
 
-@click.command("request-hours")
-@click.argument("student_id", type=int)
-@click.argument("activity")
-@click.argument("hours", type=float)
-def request_hours(student_id, activity, hours):
-    student = Student.query.get(student_id)
-    if not student:
-        print("Student not found")
-        return
-    entry = HourEntry(activity=activity, hours=hours, status="pending", student_id=student_id)
-    db.session.add(entry)
-    db.session.commit()
-    print(f"{student.name} requested {hours}h for '{activity}'")
+students = {}
+
+def create_student(id, name, username):
+    student = Student(id, name, username)
+    students[username] = student
+    return student
+
+def get_student(username):
+    return students.get(username)
+
+def get_leaderboard():
+    return sorted(students.values(), key=lambda s: s.totalHours, reverse=True)
+
+def view_accolades(username):
+    student = get_student(username)
+    if student:
+        return student.getAccolades()
+    return []

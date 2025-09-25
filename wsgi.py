@@ -1,77 +1,64 @@
-import click, pytest, sys
-from flask.cli import with_appcontext, AppGroup
+from App.main import app
+from App.controllers import student_controller, staff_controller
 
-from App.database import db, get_migrate
-from App.models import User
-from App.main import create_app
-from App.controllers import ( create_user, get_all_users_json, get_all_users, initialize )
-
-
-# This commands file allow you to create convenient CLI commands for testing controllers
-
-app = create_app()
-migrate = get_migrate(app)
-
-# This command creates and initializes the database
-@app.cli.command("init", help="Creates and initializes the database")
-def init():
+@app.cli.command("init-data")
+def init_data():
+    from App.controllers.initialize import initialize
     initialize()
-    print('database intialized')
 
-'''
-User Commands
-'''
+@app.cli.command("create-student")
+def create_student():
+    id = input("Student ID: ")
+    name = input("Name: ")
+    username = input("Username: ")
+    student_controller.create_student(id, name, username)
+    print("Student created!")
 
-# Commands can be organized using groups
+@app.cli.command("create-staff")
+def create_staff():
+    id = input("Staff ID: ")
+    name = input("Name: ")
+    username = input("Username: ")
+    dept = input("Department: ")
+    staff_controller.create_staff(id, name, username, dept)
+    print("Staff created!")
 
-# create a group, it would be the first argument of the comand
-# eg : flask user <command>
-user_cli = AppGroup('user', help='User object commands') 
-
-# Then define the command and any parameters and annotate it with the group (@)
-@user_cli.command("create", help="Creates a user")
-@click.argument("username", default="rob")
-@click.argument("password", default="robpass")
-def create_user_command(username, password):
-    create_user(username, password)
-    print(f'{username} created!')
-
-# this command will be : flask user create bob bobpass
-
-@user_cli.command("list", help="Lists users in the database")
-@click.argument("format", default="string")
-def list_user_command(format):
-    if format == 'string':
-        print(get_all_users())
+@app.cli.command("log-hours")
+def log_hours():
+    username = input("Student username: ")
+    hours = float(input("Hours: "))
+    activity = input("Activity: ")
+    date = input("Date: ")
+    entry = staff_controller.log_hours(username, hours, activity, date)
+    if entry:
+        print("Hours logged (pending approval).")
     else:
-        print(get_all_users_json())
+        print("Student not found!")
 
-app.cli.add_command(user_cli) # add the group to the cli
-
-'''
-Test Commands
-'''
-
-test = AppGroup('test', help='Testing commands') 
-
-@test.command("user", help="Run User tests")
-@click.argument("type", default="all")
-def user_tests_command(type):
-    if type == "unit":
-        sys.exit(pytest.main(["-k", "UserUnitTests"]))
-    elif type == "int":
-        sys.exit(pytest.main(["-k", "UserIntegrationTests"]))
+@app.cli.command("approve-hours")
+def approve_hours():
+    entries = staff_controller.get_pending_entries()
+    for i, e in enumerate(entries):
+        print(f"{i}. {e.student.username} - {e.hours}h ({e.activity})")
+    choice = int(input("Select entry to approve: "))
+    entry = staff_controller.approve_hours(choice)
+    if entry:
+        print("Approved!")
     else:
-        sys.exit(pytest.main(["-k", "App"]))
-    
+        print("Invalid choice.")
 
-app.cli.add_command(test)
+@app.cli.command("leaderboard")
+def leaderboard():
+    students = student_controller.get_leaderboard()
+    for s in students:
+        print(f"{s.username}: {s.totalHours}h")
 
-
-from App.controllers.student_controller import request_hours
-from App.controllers.staff_controller import approve_hours, leaderboard
-
-app.cli.add_command(request_hours)
-app.cli.add_command(approve_hours)
-app.cli.add_command(leaderboard)
-
+@app.cli.command("accolades")
+def accolades():
+    username = input("Student username: ")
+    accolades = student_controller.view_accolades(username)
+    if accolades:
+        for a in accolades:
+            print(f"{a.title} - {a.date_awardedOn}")
+    else:
+        print("No accolades found.")

@@ -1,1 +1,2 @@
-from . import auth, user, initialize, student_controller, staff_controller
+from App.controllers import student_controller
+from App.controllers import staff_controller

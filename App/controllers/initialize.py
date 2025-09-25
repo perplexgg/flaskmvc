@@ -1,8 +1,11 @@
-from .user import create_user
-from App.database import db
-
+from App.controllers import student_controller, staff_controller
 
 def initialize():
-    db.drop_all()
-    db.create_all()
-    create_user('bob', 'bobpass')
+    # Create some sample students
+    student_controller.create_student("1", "Alice", "alice")
+    student_controller.create_student("2", "Bob", "bob")
+
+    # Create one staff
+    staff_controller.create_staff("100", "Mr. Smith", "smith", "Community Service")
+
+    print("System initialized with sample data.")

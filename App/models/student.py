@@ -1,20 +1,22 @@
-from App.database import db
-from .user import User
+from App.models.user import User
+from App.models.accolade import Accolade
 
 class Student(User):
-    __tablename__ = 'student'
-    id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    totalHours = db.Column(db.Float, default=0)
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'student',
-    }
+    def __init__(self, id, name, username):
+        super().__init__(id, name, username)
+        self.totalHours = 0
+        self.accolades = []
 
     def getAccolades(self):
-        if self.totalHours >= 50:
-            return "Gold"
-        elif self.totalHours >= 25:
-            return "Silver"
-        elif self.totalHours >= 10:
-            return "Bronze"
-        return "No accolades yet"
+        return self.accolades
+
+    def addHours(self, hours):
+        self.totalHours += hours
+        self.checkAccolades()
+
+    def checkAccolades(self):
+        milestones = [10, 25, 50]
+        for m in milestones:
+            if self.totalHours >= m and not any(a.title == f"{m} Hours" for a in self.accolades):
+                accolade = Accolade(len(self.accolades)+1, f"{m} Hours", "Today")
+                self.accolades.append(accolade)
