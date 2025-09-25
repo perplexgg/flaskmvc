@@ -1,4 +1,5 @@
-from App.main import app
+from flask import Flask
+app = Flask(__name__)
 from App.controllers import student_controller, staff_controller
 
 @app.cli.command("init-data")
