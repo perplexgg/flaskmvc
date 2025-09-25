@@ -8,4 +8,7 @@ def initialize():
     # Create one staff
     staff_controller.create_staff("100", "Mr. Smith", "smith", "Community Service")
 
+    # Log hours for Alice
+    staff_controller.log_hours("alice", 50, "Beach Cleanup", "2025-09-24")
+
     print("System initialized with sample data.")
