@@ -1,4 +1,4 @@
-from werkzeug.security import check_password_hash, generate_password_hash
+'from werkzeug.security import check_password_hash, generate_password_hash
 
 '''from App.database import db
 
@@ -31,13 +31,9 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     username = db.Column(db.String, unique=True, nullable=False)
-    role = db.Column(db.String, nullable=False)  # 'student' or 'staff'
+    type = db.Column(db.String)
 
     __mapper_args__ = {
-        'polymorphic_identity':'user',
-        'polymorphic_on':role
+        'polymorphic_identity': 'user',
+        'polymorphic_on': type
     }
-
-    def __repr__(self):
-        return f"<User {self.id} {self.name} ({self.role})>"
-

@@ -1,5 +1,1 @@
-from .user import *
-from .auth import *
-from .initialize import *
-from .student_controller import *
-from . staff_controller import *
+from . import auth, user, initialize, student_controller, staff_controller

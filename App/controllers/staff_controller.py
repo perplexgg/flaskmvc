@@ -1,21 +1,24 @@
-from App.models import HourEntry, Student
+import click
 from App.database import db
+from App.models import Staff, HourEntry, Student
 
-def log_hours(student_id, activity, hours, staff_name):
-    entry = HourEntry(student_id=student_id, activity=activity, hours=hours, status="approved")
-    db.session.add(entry)
-    student = Student.query.get(student_id)
-    student.totalHours += hours
-    db.session.commit()
-    return entry
-
-def approve_hours(entry_id, status="approved"):
+@click.command("approve-hours")
+@click.argument("entry_id", type=int)
+@click.argument("status")
+def approve_hours(entry_id, status):
     entry = HourEntry.query.get(entry_id)
-    if entry:
-        entry.approve(status)
+    if not entry:
+        print("Hour entry not found")
+        return
+    entry.status = status
+    if status == "approved":
         student = Student.query.get(entry.student_id)
-        if status == "approved":
-            student.totalHours += entry.hours
-        db.session.commit()
-        return entry
-    return None
+        student.totalHours += entry.hours
+    db.session.commit()
+    print(f"Hour entry {entry.id} marked as {status}")
+
+@click.command("leaderboard")
+def leaderboard():
+    students = Student.query.order_by(Student.totalHours.desc()).all()
+    for s in students:
+        print(f"{s.name} - {s.totalHours}h ({s.getAccolades()})")
