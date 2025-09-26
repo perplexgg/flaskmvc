@@ -22,7 +22,7 @@ def create_staff():
     username = input("Username: ")
     dept = input("Department: ")
     staff_controller.create_staff(id, name, username, dept)
-    print("Staff created!")
+    print(" Staff created!")
 
 @app.cli.command("log-hours")
 def log_hours():
@@ -34,19 +34,28 @@ def log_hours():
     if entry:
         print("Hours logged (pending approval).")
     else:
-        print("Student not found!")
+        print(" Student not found!")
 
 @app.cli.command("approve-hours")
 def approve_hours():
     entries = staff_controller.get_pending_entries()
+    if not entries:
+        print("No pending entries.")
+        return
     for i, e in enumerate(entries):
-        print(f"{i}. {e.student.username} - {e.hours}h ({e.activity})")
-    choice = int(input("Select entry to approve: "))
+        student_name = e.student.username if e.student else "(unknown)"
+        print(f"{i}. {student_name} - {e.hours}h ({e.activity})")
+    raw = input("Select entry to approve: ").strip()
+    try:
+        choice = int(float(raw))
+    except Exception:
+        print("Invalid input.")
+        return
     entry = staff_controller.approve_hours(choice)
     if entry:
-        print("Approved!")
+        print(" Approved!")
     else:
-        print("Invalid choice.")
+        print(" Invalid choice.")
 
 @app.cli.command("leaderboard")
 def leaderboard():
