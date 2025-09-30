@@ -1,58 +1,75 @@
-# CLI Command Reference – Student Incentive System
+# Student Incentive System - CLI Command Reference
 
-This app is a simple CLI system for recording and managing student community service hours, built with the Flask MVC template.  
-Commands are grouped by area. Run them with `flask <command>`.
+This document provides a concise guide to all Flask CLI commands for the Student Incentive System. Commands are grouped by area, with arguments, roles, and expected behavior.
+
+---
+
+## Roles
+
+Commands are role-aware. Instead of logging in, commands now accept a **username** to identify the acting user.
+
+- **student**: can request hours and view accolades.  
+- **staff**: can log hours directly, view pending requests, and approve/reject requests.
 
 ---
 
 ## App-Level Commands
 
-### `flask init-data`
-- **Args:** none  
-- **Role:** anyone  
-- **Does:** Seeds the system with sample students and staff for quick testing.
+### `flask init`
+- **Args:** None  
+- **Role:** Anyone  
+- **Does:** Creates and initializes the database with default users and activities.
 
 ### `flask leaderboard`
-- **Args:** none  
-- **Role:** anyone  
-- **Does:** Displays a ranked list of students by total hours.
+- **Args:** None  
+- **Role:** Anyone  
+- **Does:** Prints a ranked list of students by total hours (descending; tie-break by username).
 
 ---
 
-## Student Commands
+## User Group Commands (`flask user …`)
 
-### `flask create-student`
-- **Args:** prompts for ID, name, and username.  
-- **Does:** Creates a new student user.  
+### `flask user create <user_type> <username> <password>`
+- **Role:** Anyone  
+- **Does:** Creates a new user.  
+- **Notes:** `user_type` must be `student` or `staff`.
 
-### `flask accolades`
-- **Args:** prompts for student username.  
-- **Does:** Shows a student’s accolades when they reach 10, 25, or 50 hours.  
+### `flask user list [string|json]`
+- **Role:** Anyone  
+- **Does:** Lists all users.  
+- **Notes:** Default output is `string`. Use `json` to output JSON.
+
+### `flask user logs [string|json]`
+- **Role:** Anyone  
+- **Does:** Lists all log entries of hours.  
+- **Notes:** Default output is `string`. Use `json` to output JSON.
+
+### `flask user request <hours> <activity_name> <student_username>`
+- **Role:** Student  
+- **Does:** Creates a request for staff to approve hours for a specific activity.  
+- **Notes:** Fails if the activity does not exist or student username is invalid.
+
+### `flask user accolades <student_username>`
+- **Role:** Student  
+- **Does:** Displays milestone status per activity for the specified student using `resolve_milestone` and `milestones_for`.  
+- **Output:** One line per activity showing current milestone and progress.
+
+### `flask user logs_hours <staff_username> <student_username> <hours> <activity_name>`
+- **Role:** Staff  
+- **Does:** Logs hours for a student in a specific activity and updates the student’s total hours.  
+- **Notes:** Fails if the staff, student, or activity is invalid.
+
+### `flask user confirm <staff_username> <approve|reject> <request_id>`
+- **Role:** Staff  
+- **Does:** Approves or rejects a pending student request.  
+  - **Approve:** Adds a log entry, increments student hours, and deletes the request.  
+  - **Reject:** Deletes the request without adding hours.  
+- **Notes:** `staff_username` identifies the acting staff member.
 
 ---
 
-## Staff Commands
+## Examples
 
-### `flask create-staff`
-- **Args:** prompts for ID, name, username, and department.  
-- **Does:** Creates a new staff member.  
-
-### `flask log-hours`
-- **Args:** prompts for student username, hours, activity, and date.  
-- **Does:** Logs service hours for a student (status = pending).  
-
-### `flask approve-hours`
-- **Args:** shows a list of pending entries, prompts to select one.  
-- **Does:** Approves the selected entry, adds hours to the student’s total, and checks for accolades.  
-
----
-
-## Example Flow
-```bash
-flask init-data
-flask create-student
-flask create-staff
-flask log-hours
-flask approve-hours
-flask leaderboard
-flask accolades
+- Initialize database:  
+  ```bash
+  flask init

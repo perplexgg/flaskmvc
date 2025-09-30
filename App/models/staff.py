@@ -1,6 +1,9 @@
-from App.models.user import User
+from App.database import db
+from .user import User
 
 class Staff(User):
-    def __init__(self, id, name, username, department):
-        super().__init__(id, name, username)
-        self.department = department
+    __tablename__ = 'staff'
+    id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    __mapper_args__ = {
+        'polymorphic_identity': 'staff'
+    } 

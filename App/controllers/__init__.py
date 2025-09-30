@@ -1,2 +1,5 @@
-from App.controllers import student_controller
-from App.controllers import staff_controller
+from .user import *
+from .auth import *
+from .log import *
+from .activity import *
+from .initialize import *
